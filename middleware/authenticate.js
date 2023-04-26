@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-
+require("dotenv").config();
 const authenticate = async (req, res, next) => {
   try {
     // get token from cookie
@@ -10,8 +10,8 @@ const authenticate = async (req, res, next) => {
     if (!token) {
       return res.status(401).send("Unauthorized");
     }
-    const secretkey =
-      "mynameisnexoandiamgonnachangetheworldbeyondhumanityadavancecivilisationgotitweareheretopushthehumanrace";
+    const secretkey = process.env.SECRET_KEY;
+
     // verify the token and extract user id
     const decoded = jwt.verify(token, secretkey);
     const userId = decoded.userId;

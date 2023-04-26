@@ -6,11 +6,13 @@ const cors = require("cors");
 // import models and middleware
 const User = require("./models/user");
 const authenticate = require("./middleware/authenticate");
+
+const app = express();
+// Load environment variables from .env file
 require("dotenv").config();
 
-const url =
-  "mongodb+srv://Nexo:9456@cluster0.osasaot.mongodb.net/Nexo?retryWrites=true&w=majority";
-const app = express();
+// Read MongoDB connection string from environment variable
+const url = process.env.MONGODB_URI;
 
 // Connect to MongoDB database
 mongoose
@@ -20,43 +22,15 @@ mongoose
   })
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error(err));
-
 // Define schema for order data
-const orderSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-  },
-  address: {
-    type: String,
-    required: true,
-  },
-  cartItems: {
-    type: Array,
-    required: true,
-  },
-  date: {
-    type: Date,
-    default: Date.now,
-  },
-  checked: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-// Create Order model from schema
-const Order = mongoose.model("Order", orderSchema);
+const Order = require("./models/orderSchema");
 
 // Parse request body as JSON
 app.use(cookieParser());
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static("public"));
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 // Use cookie-parser middleware
 
 // Handle POST request to /api/orders
@@ -117,7 +91,7 @@ app.delete("/api/orders/:orderId", async (req, res) => {
 app.get("/api/producttable", authenticate, async (req, res) => {
   const user = await User.findById(req.userId);
   try {
-    if (!user || user.email !== "nexo91@gmail.com") {
+    if (!user || user.email !== process.env.Admin) {
       return res.status(401).send("Unauthorized access");
     }
 
@@ -182,8 +156,7 @@ app.post("/api/login", async (req, res) => {
       return res.status(401).send("Invalid email or password");
     }
 
-    const secretkey =
-      "mynameisnexoandiamgonnachangetheworldbeyondhumanityadavancecivilisationgotitweareheretopushthehumanrace";
+    const secretkey = process.env.SECRET_KEY;
 
     // generate JWT token
     const token = jwt.sign({ userId: user._id }, secretkey, {
@@ -308,7 +281,62 @@ app.patch("/api/orders/:id", authenticate, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+const multer = require("multer");
+const path = require("path");
+const { v4: uuidv4 } = require("uuid");
 
-app.listen(5000, () => {
-  console.log("Server started on port 5000");
+// Configure Multer middleware to store uploaded files
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "/uploads");
+  },
+  filename: function (req, file, cb) {
+    cb(null, uuidv4() + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage: storage });
+
+// Define a Mongoose schema for products
+const productSchema = new mongoose.Schema({
+  name: String,
+  description: String,
+  price: Number,
+  quantity: Number,
+  paymentMethod: String,
+  images: [[String]],
+});
+
+// Create a Mongoose model for products
+const Product = mongoose.model("Product", productSchema);
+
+/// Define a route to handle form submissions
+app.post("/api/dress", upload.array("images"), async (req, res) => {
+  try {
+    if (!req.files || !req.files.length) {
+      throw new Error("No files uploaded");
+    }
+
+    const { name, description, price, quantity, paymentMethod } = req.body;
+
+    const images = req.files.map((file) => [file.filename]);
+
+    const product = new Product({
+      name,
+      description,
+      price,
+      quantity,
+      paymentMethod,
+      images,
+    });
+
+    await product.save();
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+app.listen(process.env.PORT || 5000, () => {
+  console.log(`Server started on port  5000`);
 });
