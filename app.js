@@ -168,7 +168,7 @@ app.post("/api/login", async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
-      maxAge: 86400000, // 1 day
+      maxAge: 864000000, // 1 day
     });
 
     res.status(200).json({ message: "Login successful" });
@@ -284,7 +284,7 @@ app.patch("/api/orders/:id", authenticate, async (req, res) => {
 //for forgot password
 
 // import necessary modules
-
+//nodemailer
 const nodemailer = require("nodemailer");
 
 // handle forgot password request
@@ -307,7 +307,6 @@ app.post("/api/forgot-password", async (req, res) => {
 
     // send email with link to reset password
     const resetPasswordLink = `http://localhost:3000/reset-password/${token}`;
-    console.log(resetPasswordLink);
 
     // create a nodemailer transporter with Gmail SMTP transport
     const transporter = nodemailer.createTransport({
@@ -348,9 +347,9 @@ const bcrypt = require("bcryptjs");
 app.post("/api/reset-password/:token", async (req, res) => {
   try {
     const { email, newPassword } = req.body;
-    console.log(req.body);
+
     const token = req.params.token;
-    console.log(token);
+
     // verify JWT token
     const secretkey = process.env.SECRET_KEY;
     jwt.verify(token, secretkey, async (err, decoded) => {
