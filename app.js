@@ -306,7 +306,8 @@ app.post("/api/forgot-password", async (req, res) => {
     });
 
     // send email with link to reset password
-    const resetPasswordLink = `http://localhost:3000/reset-password?token=${token}`;
+    const resetPasswordLink = `http://localhost:3000/reset-password/${token}`;
+    console.log(resetPasswordLink);
 
     // create a nodemailer transporter with Gmail SMTP transport
     const transporter = nodemailer.createTransport({
@@ -341,11 +342,15 @@ app.post("/api/forgot-password", async (req, res) => {
   }
 });
 
-// handle reset password request
-app.post("/api/reset-password", async (req, res) => {
-  try {
-    const { email, newPassword, token } = req.body;
+const bcrypt = require("bcryptjs");
 
+// handle reset password request
+app.post("/api/reset-password/:token", async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    console.log(req.body);
+    const token = req.params.token;
+    console.log(token);
     // verify JWT token
     const secretkey = process.env.SECRET_KEY;
     jwt.verify(token, secretkey, async (err, decoded) => {
@@ -358,12 +363,17 @@ app.post("/api/reset-password", async (req, res) => {
         return res.status(401).send("Invalid email");
       }
 
+      // hash new password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+
       // update user's password
       const user = await User.findOneAndUpdate(
         { email },
-        { password: newPassword }
+        { password: hashedPassword }
       );
 
+      console.log(user);
       if (!user) {
         return res.status(404).send("User not found");
       }
