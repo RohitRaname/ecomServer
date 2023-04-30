@@ -281,62 +281,102 @@ app.patch("/api/orders/:id", authenticate, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-const multer = require("multer");
-const path = require("path");
-const { v4: uuidv4 } = require("uuid");
+//for forgot password
 
-// Configure Multer middleware to store uploaded files
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "/uploads");
-  },
-  filename: function (req, file, cb) {
-    cb(null, uuidv4() + path.extname(file.originalname));
-  },
-});
-const upload = multer({ storage: storage });
+// import necessary modules
 
-// Define a Mongoose schema for products
-const productSchema = new mongoose.Schema({
-  name: String,
-  description: String,
-  price: Number,
-  quantity: Number,
-  paymentMethod: String,
-  images: [[String]],
-});
+const nodemailer = require("nodemailer");
 
-// Create a Mongoose model for products
-const Product = mongoose.model("Product", productSchema);
-
-/// Define a route to handle form submissions
-app.post("/api/dress", upload.array("images"), async (req, res) => {
+// handle forgot password request
+app.post("/api/forgot-password", async (req, res) => {
   try {
-    if (!req.files || !req.files.length) {
-      throw new Error("No files uploaded");
+    const { email } = req.body;
+
+    // check if user with the email exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).send("User not found");
     }
 
-    const { name, description, price, quantity, paymentMethod } = req.body;
+    const secretkey = process.env.SECRET_KEY;
 
-    const images = req.files.map((file) => [file.filename]);
-
-    const product = new Product({
-      name,
-      description,
-      price,
-      quantity,
-      paymentMethod,
-      images,
+    // generate JWT token with email and user ID as payload
+    const token = jwt.sign({ email, userId: user._id }, secretkey, {
+      expiresIn: "15m", // token expires in 15 minutes
     });
 
-    await product.save();
+    // send email with link to reset password
+    const resetPasswordLink = `http://localhost:3000/reset-password?token=${token}`;
 
-    res.json({ success: true });
+    // create a nodemailer transporter with Gmail SMTP transport
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.GMAIL_USER, // your Gmail email address
+        pass: process.env.GMAIL_PASSWORD, // your Gmail password or app-specific password
+      },
+    });
+
+    const subject = "Reset Your Password";
+    const html = `
+      <p>Hello,</p>
+      <p>Please click the following link to reset your password:</p>
+      <a href="${resetPasswordLink}">${resetPasswordLink}</a>
+      <p>If you did not request a password reset, please ignore this email.</p>
+    `;
+
+    // send email
+    await transporter.sendMail({
+      from: process.env.GMAIL_USER,
+      to: email,
+      subject,
+      html,
+    });
+
+    // send success response
+    res.status(200).json({ message: "Email sent" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).send("Internal server error");
   }
 });
+
+// handle reset password request
+app.post("/api/reset-password", async (req, res) => {
+  try {
+    const { email, newPassword, token } = req.body;
+
+    // verify JWT token
+    const secretkey = process.env.SECRET_KEY;
+    jwt.verify(token, secretkey, async (err, decoded) => {
+      if (err) {
+        return res.status(401).send("Invalid token");
+      }
+
+      // check if email in token matches email in request body
+      if (decoded.email !== email) {
+        return res.status(401).send("Invalid email");
+      }
+
+      // update user's password
+      const user = await User.findOneAndUpdate(
+        { email },
+        { password: newPassword }
+      );
+
+      if (!user) {
+        return res.status(404).send("User not found");
+      }
+
+      // send success response
+      res.status(200).json({ message: "Password updated successfully" });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal server error");
+  }
+});
+
 app.listen(process.env.PORT || 5000, () => {
   console.log(`Server started on port  5000`);
 });
