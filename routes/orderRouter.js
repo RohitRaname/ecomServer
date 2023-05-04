@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const authenticate = require("../middleware/authenticate");
 const {
   createOrder,
   getAllOrders,
@@ -8,10 +7,15 @@ const {
   storeCheckedMark,
 } = require("../controllers/orderController");
 
+const { protect, sendTokens } = require("../controllers/jwtController");
+
+router.use(protect, sendTokens(true));
+
+
+router.route('/').post(createOrder).get(getAllOrders)
+
 // Define routes
-router.post("/", authenticate, createOrder);
-router.get("/", getAllOrders);
 router.delete("/:orderId", deleteOrderById);
-router.patch("/:id", authenticate, storeCheckedMark);
+router.patch("/:id", storeCheckedMark);
 
 module.exports = router;

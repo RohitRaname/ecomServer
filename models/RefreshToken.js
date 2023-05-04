@@ -1,18 +1,16 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const refreshTokenSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
-    refreshToken:{
-      type:String,
-      required:true
-    } ,
-    
-      
+    refreshToken: {
+      type: String,
+      required: true,
+    },
   },
   {
     toObject: { virtual: true },
@@ -23,8 +21,6 @@ const refreshTokenSchema = new mongoose.Schema(
 
 refreshTokenSchema.index({ user: 1, refreshToken: -1 }, { unique: true });
 
-const refreshTokenModel = mongoose.model('RefreshToken', refreshTokenSchema);
+const refreshTokenModel = mongoose.model("RefreshToken", refreshTokenSchema);
 
 module.exports = refreshTokenModel;
-
-

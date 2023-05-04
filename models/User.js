@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const validator = require("validator");
+const crypto = require("crypto");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -16,6 +17,9 @@ const UserSchema = new mongoose.Schema(
       lowercase: true,
       validate: [validator.isEmail, "Email is required"],
     },
+
+    avatar:{type:String,default:"avatar.png"},
+
     password: {
       type: String,
       required: [true, "Password is required"],
@@ -23,9 +27,12 @@ const UserSchema = new mongoose.Schema(
       minLength: 6,
     },
 
-    passwordChangedAt: Date,
 
-    emailVerfy: { type: Boolean, default: false },
+    passwordChangedAt: Date,
+    tokenHash: String,
+    tokenExpiresIn: Date,
+
+    emailVerify: { type: Boolean, default: false },
 
     active: { type: Boolean, default: true },
 
@@ -74,6 +81,35 @@ UserSchema.methods.comparePassword = async function (password) {
   } catch (error) {
     throw new Error("Password comparison failed");
   }
+};
+
+UserSchema.methods.removeUserCredentialfromReq = function () {
+  this.password = undefined;
+  this.active = undefined;
+  // this.confirmPassword = undefined;
+};
+
+// handle token send for tpassword
+UserSchema.methods.setTokenPropertiesAndgetTokenCode = function () {
+  const token = crypto.randomBytes(6).toString('hex');
+  this.tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  this.tokenExpiresIn = new Date(Date.now() + 10 * 60 * 1000);
+
+  return token;
+};
+
+UserSchema.methods.removeTokenProperties = function () {
+  this.tokenHash = undefined;
+  this.tokenExpiresIn = undefined;
+};
+
+UserSchema.methods.compareToken = function (tokenDB, token) {
+  const tokenHash = crypto
+    .createHash('sha256')
+    .update(token)
+    .update(token)
+    .digest('hex');
+  return tokenHash === tokenDB;
 };
 
 const User = mongoose.model("User", UserSchema);

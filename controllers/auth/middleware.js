@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-const User = require("../../Model/user/userModel");
+const User = require("../../models/User");
 
 const AppError = require("../../utils/AppError");
 const send = require("../../utils/sendJSON");
@@ -8,7 +8,7 @@ const { generateHash } = require("../../utils/crypto");
 const catchAsync = require("../../utils/catchAsync");
 const tryCatch = require("../../utils/tryCatch");
 
-exports.restricTo =
+exports.restrictTo =
   (...roles) =>
   (req, res, next) => {
     if (!roles.includes(req.user.role))

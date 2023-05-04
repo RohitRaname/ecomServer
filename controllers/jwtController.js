@@ -205,13 +205,12 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
 
 exports.sendTokens = (pass) =>
   catchAsync(async (req, res, next) => {
+    console.log("sendTokens");
 
-    console.log('sendTokens')
-    
     if ((req.user && req.userBothJwtAreValid) || req.loginUser === false) {
       return pass ? next() : send(res, 200);
     }
-    console.log('sendTokens sending')
+    console.log("sendTokens sending");
     //   return next();
     const { _id } = req.user;
 
@@ -225,6 +224,8 @@ exports.sendTokens = (pass) =>
     const { refreshCookieOptions, jwtCookieOptions } = cookiesOptions();
     res.cookie("refreshJwt", refreshJwtToken, refreshCookieOptions);
     res.cookie("jwt", jwtToken, jwtCookieOptions);
+
+    if (req.redirectPath) return res.redirect(req.redirectPath);
 
     // resetting some properties
     //   req.userBothJwtAreValid = false;

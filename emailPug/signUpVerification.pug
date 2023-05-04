@@ -1,8 +1,8 @@
 extends baseEmail
 
 block content
-  p Hi #{firstName},
-  p To verify yourself? Click on the link bwelow
+  p Hi #{name},Welcome to Nexo 
+  p To verify yourself? Click on the link below
   //- p (Website for this action not yet implememnted.)
   table.btn.btn-primary(role='presentation', border='0', cellpadding='0', cellspacing='0')
     tbody
@@ -11,6 +11,6 @@ block content
           table(role='presentation', border='0', cellpadding='0', cellspacing='0')
             tbody
               tr
-                td= ` Here is your code: ${verify_code}`
-                  //- a(href=`${url}`, target=`_blank`) Confirm
+                //- td= ` Here is your code: ${verify_code}`
+                a(href=`${url}`, target=`_blank`) Confirm Signup
   //- p If you didn't forget your password, please ignore this email!

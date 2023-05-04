@@ -18,10 +18,17 @@ const dressSchema = new mongoose.Schema({
     type: mongoose.Types.Decimal128,
     required: [true, "price is required"],
   },
+  discount:Number,
+
+  // deleted prop
+  active:{type:Boolean,default:true},
+
   quantity: {
     type: Number,
     required: [true, "quantity is required"],
   },
+
+  
 
   images: [
     {

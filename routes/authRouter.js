@@ -1,9 +1,7 @@
 const express = require("express");
 const Router = express.Router();
 const {
-  signup,
-  login,
-  logout,
+
 } = require("../controllers/auth/signupController");
 
 const { sendTokens } = require("../controllers/jwtController");
@@ -12,19 +10,21 @@ const { sendTokens } = require("../controllers/jwtController");
 const {
   forgotPassword,
   resetPassword,
-} = require("../controllers/auth/forgotController");
+  signup,
+  login,
+  logout,
+  confirmSignupUser,
+} = require("../controllers/authController");
 
-// Signup route
-Router.post("/signup", signup, sendTokens(false));
+Router.post("/signup", signup);
+Router.get("/confirmSignup/:token", confirmSignupUser, sendTokens(false));
 
-// Login route
 Router.post("/login", login, sendTokens(false));
 
-// Logout route
 Router.get("/logout", logout);
 
 // Define routes
-Router.post("/forgot-password", forgotPassword);
-Router.post("/reset-password/:token", resetPassword, sendTokens);
+Router.post("/forgotPassword", forgotPassword);
+Router.patch("/resetPassword/:token", resetPassword, sendTokens(false));
 
 module.exports = Router;

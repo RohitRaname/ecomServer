@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-
+const catchAsync = require("../utils/catchAsync");
 const { BadRequestError, UnAuthorizedError } = require("../errors/bad-request");
 
 // Signup controller
@@ -38,6 +38,25 @@ exports.setUserIdAsParams = (req, res, next) => {
   req.params.id = req.user._id;
   next();
 };
+
+exports.updateMyPassword = catchAsync(async (req, res, next) => {
+  const { password, newPassword, confirmNewPassword } = req.body;
+
+  if (newPassword !== confirmNewPassword)
+    return next(new AppError("Passwords do no match"));
+
+  // is already loginned mean we know who he is through our jwt tokens
+  const user = await User.findById(req.user._id).select("password").exec();
+
+  if (!(await user.isValidPassword(password, user.password)))
+    return next(new AppError("Password is incorrect", 400));
+
+  // user valid
+  user.password = newPassword;
+  await user.save();
+
+  next();
+});
 
 // CheckLoggedIn controller
 // const checkLoggedIn = async (req, res) => {

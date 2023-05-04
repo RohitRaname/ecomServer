@@ -3,15 +3,17 @@
 
 const nodemailer = require("nodemailer");
 const pug = require("pug");
-const htmlToText = require("html-to-text");
+const { convert } = require("html-to-text");
 const AppError = require("./AppError");
 
 class Email {
-  constructor(user, url, verify_code) {
+  constructor(user, url, token) {
+    console.log("contruct-token", token);
+
     this.to = user.email;
-    this.firstName = user.name.split(" ")[0];
+    this.name = user.name.split(" ")[0];
+    this.token = token;
     this.url = url;
-    this.verify_code = verify_code;
     this.from = `Rohit<${process.env.EMAIL_FROM}>`;
   }
 
@@ -40,7 +42,7 @@ class Email {
   // Send the actual email
   async send(template, subject) {
     // 1) Render HTML based on a pug template
-    const html = pug.renderFile(`${__dirname}/../../emailPug/${template}.pug`, {
+    const html = pug.renderFile(`${__dirname}/../emailPug/${template}.pug`, {
       firstName: this.firstName,
       url: this.url,
       subject,
@@ -52,7 +54,7 @@ class Email {
       to: this.to,
       subject,
       html,
-      text: htmlToText.fromString(html),
+      text: convert(html),
     };
 
     // 3) Create a transport and send email
@@ -77,10 +79,10 @@ class Email {
 
 let retrySendEmailCount = 0;
 // max will be => 2
-async function sendEmail(req, user, type, path, token) {
-  const url = `${req.protocol}://${req.get(
-    "host"
-  )}/${path}?token=${token}`;
+async function sendEmail(req, user, type, redirectPath, token) {
+  console.log("token", token);
+
+  const url = `${req.protocol}://${req.get("host")}${redirectPath}`;
   const email = new Email(user, url, token);
 
   try {
@@ -94,7 +96,7 @@ async function sendEmail(req, user, type, path, token) {
     if (retrySendEmailCount === 2)
       return new AppError("Please try to signUp again!", 500);
 
-    await sendEmail(req, user, type, path, token);
+    await sendEmail(req, user, type, redirectPath, token);
   }
 }
 
