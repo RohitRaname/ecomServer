@@ -6,17 +6,18 @@ const path = require("path");
 const cors = require("cors");
 
 // Routers
-const orderRouter = require("./routes/orderRouter");
+const orderRouter = require("./routes/order/baseRouter");
 const userRouter = require("./routes/userRouter");
 const shopRouter = require("./routes/shopRouter");
 const authRouter = require("./routes/authRouter");
-const productRouter= require('./routes/productRouter')
-const cartRouter= require('./routes/cartRouter')
+const productRouter = require("./routes/productRouter");
+const cartRouter = require("./routes/cartRouter");
 
-const GlobalErrorHandler= require('./controllers/globalErrorHandler')
+const GlobalErrorHandler = require("./controllers/globalErrorHandler");
 
 // utils
-const send= require('./utils/sendJSON')
+const send = require("./utils/sendJSON");
+const stripeCheckout = require("./stripe");
 
 // Load environment variables from .env file
 
@@ -35,8 +36,10 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/shops", shopRouter);
-app.use('/api/v1/products',productRouter)
-app.use('/api/v1/cart',cartRouter)
+app.use("/api/v1/products", productRouter);
+app.use("/api/v1/cart", cartRouter);
+
+app.post("/api/create-checkout-session", stripeCheckout);
 
 app.use("/api*", (req, res) => send(res, 404, "api not found"));
 
@@ -44,7 +47,6 @@ app.use("*", (req, res, next) => {
   console.error(`Route doesn't exist ${req.originalUrl}`);
   next();
 });
-
 
 app.use(GlobalErrorHandler);
 

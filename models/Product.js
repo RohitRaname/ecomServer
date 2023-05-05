@@ -7,7 +7,7 @@ const ProductSchema = new mongoose.Schema(
       required: true,
     },
 
-    title: {
+    name: {
       type: String,
       required: [true, "name is required"],
       trim: true,
@@ -30,7 +30,7 @@ const ProductSchema = new mongoose.Schema(
     // deleted prop
     active: { type: Boolean, default: true },
 
-    qty: {
+    quantity: {
       type: Number,
       required: [true, "quantity is required"],
     },

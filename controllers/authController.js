@@ -80,6 +80,8 @@ exports.verifyToken = async (req, type, token) => {
 exports.restrictTo =
   (...roles) =>
   (req, res, next) => {
+    console.log("user", req.user);
+
     if (!roles.includes(req.user.role))
       return next(new AppError("Permission denied"));
 

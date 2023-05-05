@@ -37,7 +37,7 @@ exports.addItemToCart = catchAsync(async (req, res, next) => {
     {
       checkItemExist: true,
       updateIfItemExist: {
-        $inc: { "items.$.qty": item.qty || 1 },
+        $inc: { "items.$.quantity": item.quantity || 1 },
       },
       deleteItemExist: false,
     },
@@ -47,7 +47,7 @@ exports.addItemToCart = catchAsync(async (req, res, next) => {
         filter: {},
 
         update: {
-          $inc: { "count.cartItems": Number(item.qty) || 1 },
+          $inc: { "count.cartItems": Number(item.quantity) || 1 },
         },
       },
     }
@@ -87,14 +87,14 @@ exports.removeGivenItemsFromCart = tryCatch(async (userId, itemIds) => {
 
 exports.updateItemQtyInCart = catchAsync(async (req, res, next) => {
   const itemId = req.params.id;
-  const { qty } = req.body;
+  const { quantity } = req.body;
 
   await topLevelBucketController.updateItemInList(
     Cart,
     req.user._id,
     "items",
     itemId,
-    { $set: { "items.$.qty": qty } }
+    { $set: { "items.$.quantity": quantity } }
   );
   // await this.updateUserTotalCartItemsCount(req.user._id);
   return send(res, 200, "item qty updated");

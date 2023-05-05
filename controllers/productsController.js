@@ -9,14 +9,14 @@ const Factory = require("./handleFactoryController");
 const { formatQueryIntoPipeline } = require("../utils/mongodbQueryConverter");
 const AppError = require("../utils/AppError");
 
-const searchQuery = (title, returnStoredSource) => ({
+const searchQuery = (name, returnStoredSource) => ({
   $search: {
     compound: {
       should: [
         {
           autocomplete: {
-            path: "title",
-            query: title,
+            path: "name",
+            query: name,
             fuzzy: {
               prefixLength: 1,
             },
@@ -24,8 +24,8 @@ const searchQuery = (title, returnStoredSource) => ({
         },
         {
           text: {
-            path: "title",
-            query: title,
+            path: "name",
+            query: name,
             score: { boost: { value: 2 } },
           },
         },
@@ -33,20 +33,20 @@ const searchQuery = (title, returnStoredSource) => ({
       minimumShouldMatch: 1,
     },
 
-    highlight: { path: "title" },
+    highlight: { path: "name" },
     returnStoredSource,
   },
 });
 
 // agg pipeline for search
 exports.searchProductAggPipeline = (
-  productTitle,
+  productName,
   page,
   limit,
   returnStoredSource
 ) => {
   let pipeline = [
-    searchQuery(productTitle, returnStoredSource),
+    searchQuery(productName, returnStoredSource),
 
     { $skip: Number(page) * Number(limit) },
 
