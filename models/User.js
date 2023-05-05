@@ -40,7 +40,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "user",
       enum: {
-        values: ["user", "admin"],
+        values: ["user", "admin","shopowner"],
         message: "Role is required",
       },
       trim: true,
@@ -62,6 +62,10 @@ UserSchema.pre("save", async function (next) {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(user.password, salt);
     user.password = hash;
+    user.passwordChangedAt = Date.now() - 1000;
+
+
+
     return next();
   } catch (error) {
     return next(error);

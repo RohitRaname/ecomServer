@@ -77,7 +77,7 @@ exports.verifyToken = async (req, type, token) => {
 };
 
 // initially call then roles wil be defined in parent function as varible inside it and due to closure(access to outer scope even  if function is removed from stack)
-exports.restricTo =
+exports.restrictTo =
   (...roles) =>
   (req, res, next) => {
     if (!roles.includes(req.user.role))

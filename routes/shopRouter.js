@@ -8,7 +8,7 @@ const { protect, sendTokens } = require("../controllers/jwtController");
 
 router.use(protect, sendTokens(true));
 
-router.use(restrictTo(["admin", "shopowner"]));
+router.use(restrictTo("admin", "shopowner"));
 
 router.post("/api/saveData", shopController.saveShop);
 router.get("/api/getData", authenticate, shopController.getShops);

@@ -55,30 +55,22 @@ const handleUserPasswordChanged = tryCatch(async (res, user, decodedToken) => {
   const passwordChangedAt = +new Date(user.passwordChangedAt);
   const tokenCreationTime = Number(decodedToken.iat) * 1000;
 
-  if (passwordChangedAt > tokenCreationTime) {
-    return send(res, 200, "login first");
-  }
+  if (passwordChangedAt > tokenCreationTime) return false;
 
   return true;
 });
 
-const handleUserValid = tryCatch(async (res, jwt, optionalUserID) => {
+const handleUserValid = tryCatch(async (res, jwt) => {
   let userID, token;
 
-  if (optionalUserID) {
-    token = jwt;
-    userID = optionalUserID;
-  } else {
-    token = await decodeToken(jwt, process.env.JWT_SECRET);
-    userID = token.id;
-  }
+  token = await decodeToken(jwt, process.env.JWT_SECRET);
+  userID = token.id;
 
   // check if user exist in db
   const user = await User.findOne({
     _id: userID,
-    blackList: false,
-    invalidRefreshTokenTries: { $lt: 2 },
     emailVerify: true,
+    active:true
   }).exec();
 
   if (!user) {
@@ -163,7 +155,11 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   if (jwt && refreshJwt) user = await handleUserValid(res, jwt);
 
-  if (!user) return res.redirect("/logout");
+  // console.log('user',user)
+
+  if (!user) return res.redirect("/api/v1/auth/logout");
+
+  // if (!user) return send(res, 200, "user not exist");
 
   // reached here mean user is valid(jwt + refresh case)
   req.user = user;
@@ -207,10 +203,9 @@ exports.sendTokens = (pass) =>
   catchAsync(async (req, res, next) => {
     console.log("sendTokens");
 
-    if ((req.user && req.userBothJwtAreValid) || req.loginUser === false) {
+    if ((req.user && req.userBothJwtAreValid) || req.loginUser === false)
       return pass ? next() : send(res, 200);
-    }
-    console.log("sendTokens sending");
+
     //   return next();
     const { _id } = req.user;
 

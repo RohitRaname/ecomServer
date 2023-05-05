@@ -2,6 +2,7 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const catchAsync = require("../utils/catchAsync");
 const { BadRequestError, UnAuthorizedError } = require("../errors/bad-request");
+const Factory= require('./handleFactoryController')
 
 // Signup controller
 
@@ -24,7 +25,7 @@ exports.getMe = async (req, res) => {
 };
 
 exports.updateMe = async (req, res, next) => {
-  const nonAcceptableFields = ["email", "password"];
+  const nonAcceptableFields = ["email", "password","role"];
 
   nonAcceptableFields.forEach((field) => {
     if (req.body[field]) delete req.body[field];
@@ -89,3 +90,12 @@ exports.getProductTable = async (req, res) => {
   // Send success response
   res.status(200).json({ message: "Authenticated" });
 };
+
+
+
+// for admin
+exports.apiGetUser = Factory.getOne(User);
+exports.apiGetUsers = Factory.getAll(User);
+exports.apiUpdateUser = Factory.updateOne(User);
+exports.apiDeleteUser = Factory.deleteOne(User);
+exports.apiCreateUser = Factory.createOne(User);
