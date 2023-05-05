@@ -1,28 +1,36 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const shopSchema = new Schema({
-  s_id: {
-    type: String,
-    required: true,
+const shopSchema = new Schema(
+  {
+    s_id: {
+      type: String,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+    },
+    address: {
+      type: String,
+      required: true,
+    },
+
+    avatar: { type: String, default: "avatar.png" },
+    description: String,
   },
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-  },
-  phone: {
-    type: String,
-    required: true,
-  },
-  address: {
-    type: String,
-    required: true,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const Shop = mongoose.model("Shop", shopSchema);
 

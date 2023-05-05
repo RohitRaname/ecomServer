@@ -202,10 +202,11 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
 exports.sendTokens = (pass) =>
   catchAsync(async (req, res, next) => {
     console.log("sendTokens");
-
+    
     if ((req.user && req.userBothJwtAreValid) || req.loginUser === false)
-      return pass ? next() : send(res, 200);
-
+    return pass ? next() : send(res, 200);
+    
+    console.log("sendTokens-really");
     //   return next();
     const { _id } = req.user;
 

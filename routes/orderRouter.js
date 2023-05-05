@@ -2,20 +2,27 @@ const express = require("express");
 const router = express.Router();
 const {
   createOrder,
-  getAllOrders,
-  deleteOrderById,
-  storeCheckedMark,
+
+  getMyOrders,
+  updateOrderState,
+  cancelMyOrder,
 } = require("../controllers/orderController");
 
 const { protect, sendTokens } = require("../controllers/jwtController");
+const { restrictTo } = require("../controllers/authController");
 
 router.use(protect, sendTokens(true));
 
+router
+  .route("/")
+  .get(restrictTo("admin", "user"), getMyOrders)
+  .post(restrictTo("admin", "user"), createOrder);
 
-router.route('/').post(createOrder).get(getAllOrders)
+// by user
+router.patch("/:id/cancel", restrictTo("admin", "user"), cancelMyOrder);
 
-// Define routes
-router.delete("/:orderId", deleteOrderById);
-router.patch("/:id", storeCheckedMark);
+router.use(restrictTo("admin", "showOwner"));
+
+router.patch("/:id/updateState", updateOrderState);
 
 module.exports = router;

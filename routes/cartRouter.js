@@ -5,7 +5,7 @@ const {
   removeItemFromCart,
   updateItemQtyInCart,
   getCartSummary,
-  removeAllCartItems,
+  clearCart,
   getCartItems,
 } = require("../controllers/cartController");
 
@@ -17,10 +17,10 @@ Router.use(protect, sendTokens(true), restrictTo("admin", "user"));
 
 Router.get("/summary", getCartSummary);
 
-Router.route("/").post(addItemToCart).get(getCartItems);
+Router.route("/items").post(addItemToCart).get(getCartItems);
 
-Router.delete("/all-items", removeAllCartItems);
-Router.route("/:id").delete(removeItemFromCart).patch(updateItemQtyInCart);
+Router.delete("/clear", clearCart);
+Router.route("/items/:id").delete(removeItemFromCart).patch(updateItemQtyInCart);
 
 
 

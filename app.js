@@ -27,7 +27,7 @@ app.use(cors());
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
-app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(express.static("public"));
 
 // Routes
@@ -36,7 +36,7 @@ app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/shops", shopRouter);
 app.use('/api/v1/products',productRouter)
-app.use('/api/v1/carts',cartRouter)
+app.use('/api/v1/cart',cartRouter)
 
 app.use("/api*", (req, res) => send(res, 404, "api not found"));
 

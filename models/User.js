@@ -17,8 +17,11 @@ const UserSchema = new mongoose.Schema(
       lowercase: true,
       validate: [validator.isEmail, "Email is required"],
     },
+    
 
-    avatar:{type:String,default:"avatar.png"},
+    avatar: { type: String, default: "avatar.png" },
+    address:String,
+    phoneNumber:String,
 
     password: {
       type: String,
@@ -26,7 +29,6 @@ const UserSchema = new mongoose.Schema(
       select: false,
       minLength: 6,
     },
-
 
     passwordChangedAt: Date,
     tokenHash: String,
@@ -40,7 +42,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "user",
       enum: {
-        values: ["user", "admin","shopowner"],
+        values: ["user", "admin", "showOwner"],
         message: "Role is required",
       },
       trim: true,
@@ -63,8 +65,6 @@ UserSchema.pre("save", async function (next) {
     const hash = await bcrypt.hash(user.password, salt);
     user.password = hash;
     user.passwordChangedAt = Date.now() - 1000;
-
-
 
     return next();
   } catch (error) {
@@ -95,8 +95,8 @@ UserSchema.methods.removeUserCredentialfromReq = function () {
 
 // handle token send for tpassword
 UserSchema.methods.setTokenPropertiesAndgetTokenCode = function () {
-  const token = crypto.randomBytes(6).toString('hex');
-  this.tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const token = crypto.randomBytes(6).toString("hex");
+  this.tokenHash = crypto.createHash("sha256").update(token).digest("hex");
   this.tokenExpiresIn = new Date(Date.now() + 10 * 60 * 1000);
 
   return token;
@@ -109,10 +109,10 @@ UserSchema.methods.removeTokenProperties = function () {
 
 UserSchema.methods.compareToken = function (tokenDB, token) {
   const tokenHash = crypto
-    .createHash('sha256')
+    .createHash("sha256")
     .update(token)
     .update(token)
-    .digest('hex');
+    .digest("hex");
   return tokenHash === tokenDB;
 };
 

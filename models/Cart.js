@@ -17,7 +17,6 @@ const CartSchema = new mongoose.Schema(
         // need to refetch doc for to get new price
         price: Number,
 
-
         image: String,
         qty: { type: Number, default: 0 },
       },

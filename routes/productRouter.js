@@ -8,7 +8,7 @@ Router.get("/search", productController.searchProducts);
 Router.get("/", productController.getProducts);
 Router.get("/:id", productController.apiGetProduct);
 
-Router.use(protect, sendTokens(true), restrictTo("admin", "shopowner"));
+Router.use(protect, sendTokens(true), restrictTo("admin", "showOwner"));
 
 Router.route("/:id")
   .delete(

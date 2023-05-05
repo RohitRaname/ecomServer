@@ -1,59 +1,62 @@
 const Order = require("../models/Order");
 const User = require("../models/User");
-// Handle POST request to /api/orders
-const createOrder = async (req, res) => {
-  const { name, email, address, cartItems } = req.body;
+const catchAsync = require("../utils/catchAsync");
+const ApiFeatures = require("../utils/apiFeatures");
+const send = require("../utils/sendJSON");
 
-  // Create new Order instance with request data
+const createOrder = catchAsync(async (req, res) => {
+  const { state, shipping, payment, summary, items } = req.body;
+
   const newOrder = new Order({
-    name,
-    email,
-    address,
-    cartItems,
-    date: new Date(),
+    state,
+    shipping,
+    payment,
+    summary,
+    items,
   });
 
-  try {
-    // Save new order to database
-    await newOrder.save();
-    // Send response indicating success
-    res.status(201).json({ message: "Order submitted successfully" });
-  } catch (err) {
-    console.error(err);
-    // Send response indicating error
-    res.status(500).json({ message: "Server error" });
-  }
-};
+  await newOrder.save();
+  send(res, 200, "order successfully");
+});
 
-// Handle GET request to /api/orders
-const getAllOrders = async (req, res) => {
-  try {
-    // Fetch all orders from the database
-    const orders = await Order.find();
-    // Send response with orders
-    res.status(200).json(orders);
-  } catch (err) {
-    console.error(err);
-    // Send response indicating error
-    res.status(500).json({ message: "Server error" });
-  }
-};
+////////////////////////////////////////////////////////
+// USERS OR ADMIN ONLY (NOT SHOPOWNERS)
+///////////////////////////////////////////////////////
+const getMyOrders = catchAsync(async (req, res) => {
+  const { query } = req;
+  const result = new ApiFeatures(Order.find({}), query)
+    .filter()
+    .sort()
+    .limitFields()
+    .pagination();
 
-// Handle DELETE request to /api/orders/:orderId
-const deleteOrderById = async (req, res) => {
-  try {
-    // Get the order ID from the request params
-    const orderId = req.params.orderId;
-    // Delete the order from the database
-    const result = await Order.deleteOne({ _id: orderId });
-    // Send response indicating success
-    res.status(200).json({ message: "Order deleted successfully" });
-  } catch (err) {
-    console.error(err);
-    // Send response indicating error
-    res.status(500).json({ message: "Server error" });
-  }
-};
+  const docs = await result.query;
+
+  send(res, 200, "my orders", docs);
+});
+
+const cancelMyOrder = catchAsync(async (req, res) => {
+  const { id: orderId } = req.params;
+  await Order.findOneAndUpdate({ _id: orderId }, { $set: { state: "cancel" } });
+  send(res, 200, "order cancelled");
+});
+
+////////////////////////////////////////////////////////
+// SHOP OWNERS OR ADMIN ONLY
+///////////////////////////////////////////////////////
+
+/// state
+const updateOrderState = catchAsync(async (req, res) => {
+  const { id: orderId } = req.params;
+  const { state } = req.body;
+
+  await Order.findOneAndUpdate(
+    { _id: orderId },
+    { $set: { state } },
+    { runValidators: true }
+  );
+  send(res, 200, "order updated successfully");
+});
 
 //store the checked mark
 const storeCheckedMark = async (req, res) => {
@@ -81,8 +84,11 @@ const storeCheckedMark = async (req, res) => {
 };
 
 module.exports = {
+  // user
   createOrder,
-  getAllOrders,
-  deleteOrderById,
-  storeCheckedMark,
+  getMyOrders,
+  cancelMyOrder,
+
+  // shopowner
+  updateOrderState,
 };

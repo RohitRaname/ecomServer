@@ -1,11 +1,11 @@
 /* eslint-disable camelcase */
 const mongoose = require('mongoose');
-const tryCatch = require('../../utils/tryCatch');
-const UserActivity = require('../../Model/user/userActivityModel');
+const tryCatch = require('../utils/tryCatch');
+// const UserActivity = require('../user/userActivityModel');
 const {
   formatQueryIntoPipeline,
-} = require('../../utils/mongodbQueryConverter');
-const send = require('../../utils/sendJSON');
+} = require('../utils/mongodbQueryConverter');
+const send = require('../utils/sendJSON');
 
 const getNewDocPageNumber = tryCatch(async (model, userId) => {
   const doc = await model
@@ -573,67 +573,67 @@ exports.getUserAllActivityDocs = tryCatch(async (userId, fields) => {
 // });
 
 // Shortcut Function to add data to user------------------------------------
-exports.addItemToUser = tryCatch(async (userId, activityField, item) => {
-  await this.addItemToList(
-    UserActivity,
-    userId,
-    activityField,
-    item,
-    {
-      checkItemExist: false,
-      deleteItemExist: false,
-    },
-    {
+// exports.addItemToUser = tryCatch(async (userId, activityField, item) => {
+//   await this.addItemToList(
+//     UserActivity,
+//     userId,
+//     activityField,
+//     item,
+//     {
+//       checkItemExist: false,
+//       deleteItemExist: false,
+//     },
+//     {
       
-      update: false,
+//       update: false,
      
-    }
-  );
-});
-exports.removeItemFromUser = tryCatch(async (userId, activityField, itemId,) => {
-  await this.removeItemFromList(UserActivity, userId, activityField, itemId,   {
+//     }
+//   );
+// });
+// exports.removeItemFromUser = tryCatch(async (userId, activityField, itemId,) => {
+//   await this.removeItemFromList(UserActivity, userId, activityField, itemId,   {
       
-    update: false ,
+//     update: false ,
    
-  });
-});
+//   });
+// });
 
-// embedded Options
-exports.getItemsFromUser = tryCatch(
-  async (userId, activityField, query) =>
-    await this.getEmbeddedItems(UserActivity, userId, activityField, query)
-);
+// // embedded Options
+// exports.getItemsFromUser = tryCatch(
+//   async (userId, activityField, query) =>
+//     await this.getEmbeddedItems(UserActivity, userId, activityField, query)
+// );
 
-exports.userActivityController = (activityField, action, query,) =>
-  tryCatch(async (req, res, next) => {
-    const userId = req.user._id;
-    const itemId = req.params.id;
-    let result;
+// exports.userActivityController = (activityField, action, query,) =>
+//   tryCatch(async (req, res, next) => {
+//     const userId = req.user._id;
+//     const itemId = req.params.id;
+//     let result;
 
-    if (action === 'add-item')
-      result = await this.addItemToUser(
-        userId,
-        activityField,
-        Object.keys(req.body).length === 0 ? { _id: itemId } : req.body,
-      );
+//     if (action === 'add-item')
+//       result = await this.addItemToUser(
+//         userId,
+//         activityField,
+//         Object.keys(req.body).length === 0 ? { _id: itemId } : req.body,
+//       );
 
-    if (action === 'remove-item')
-      result = await this.removeItemFromUser(userId, activityField, itemId,);
+//     if (action === 'remove-item')
+//       result = await this.removeItemFromUser(userId, activityField, itemId,);
 
-    if (action === 'get-items') {
-      result = await this.getItemsFromUser(userId, activityField, query);
-      result = { docs: result };
-    }
+//     if (action === 'get-items') {
+//       result = await this.getItemsFromUser(userId, activityField, query);
+//       result = { docs: result };
+//     }
 
-    // item exist in user activity data
-    if (action === 'item-exist') {
-      result = await this.itemExistInList(
-        UserActivity,
-        userId,
-        activityField,
-        itemId
-      );
-      result = { itemExist: result };
-    }
-    return send(res, 200, 'req successful', result);
-  });
+//     // item exist in user activity data
+//     if (action === 'item-exist') {
+//       result = await this.itemExistInList(
+//         UserActivity,
+//         userId,
+//         activityField,
+//         itemId
+//       );
+//       result = { itemExist: result };
+//     }
+//     return send(res, 200, 'req successful', result);
+//   });

@@ -12,23 +12,6 @@ const Cart = require("../models/Cart");
 const tryCatch = require("../utils/tryCatch");
 const topLevelBucketController = require("../controllers/bucketController");
 
-exports.getCartSummary = tryCatch(async (userId) => {
-  const items = await topLevelBucketController.getEmbeddedItems(Cart, userId, {
-    listName: "items",
-    sort: null,
-    project: null,
-    directContainItems: true,
-  });
-  console.log("items-count", items);
-  const summary = items.reduce(
-    (acc, item) => {
-      acc.totalQty += item.qty;
-      acc.totalPrice += item.price * item.qty;
-    },
-    { totalQty: 0, totalPrice: 0 }
-  );
-  return summary;
-});
 
 // // update cartItems qty in user obj
 // exports.updateUserTotalCartItemsCount = tryCatch(async (userId) => {
@@ -54,7 +37,7 @@ exports.addItemToCart = catchAsync(async (req, res, next) => {
     {
       checkItemExist: true,
       updateIfItemExist: {
-        $inc: { "cart.$.qty": item.qty || 1 },
+        $inc: { "items.$.qty": item.qty || 1 },
       },
       deleteItemExist: false,
     },
@@ -111,9 +94,9 @@ exports.updateItemQtyInCart = catchAsync(async (req, res, next) => {
     req.user._id,
     "items",
     itemId,
-    { $set: { "cart.$.qty": qty } }
+    { $set: { "items.$.qty": qty } }
   );
-  await this.updateUserTotalCartItemsCount(req.user._id);
+  // await this.updateUserTotalCartItemsCount(req.user._id);
   return send(res, 200, "item qty updated");
 });
 
@@ -163,13 +146,16 @@ exports.getCartSummary = catchAsync(async (req, res, next) => {
 
   const summary = agg[0];
 
+  console.log("summary",summary)
+
+
   return send(res, 200, "cart summary", summary);
 });
 
-exports.removeAllCartItems = tryCatch(async (req, res) => {
+exports.clearCart = tryCatch(async (req, res) => {
   const userId = req.user._id;
-  await topLevelBucketController.removeAllItems(Cart, userId, "cart", {});
-  return send(res, 200, "all cart items");
+  await topLevelBucketController.removeAllItems(Cart, userId, "items", {});
+  return send(res, 200, "cart is empty");
 });
 
 // ref
@@ -177,7 +163,7 @@ exports.getCartItems = tryCatch(async (req, res) => {
   const userId = req.user._id;
   let items = await topLevelBucketController.getRefItems(Cart, userId, {
     listName: "items",
-    // sort: "-ts",
+    sort: "-createdAt",
     project: null,
     directContainItems: true,
     lookup: {
