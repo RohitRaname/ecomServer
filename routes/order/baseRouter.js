@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 
 const { protect, sendTokens } = require("../../controllers/jwtController");
-const { restrictTo } = require("../../controllers/authController");
 const shopOwnerOrderRouter = require("./shopOwnerRouter");
 const userOrderRouter = require("./userRouter");
 
