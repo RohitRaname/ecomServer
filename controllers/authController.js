@@ -105,8 +105,8 @@ exports.signup = catchAsync(async (req, res, next) => {
 
   // check account exist
   const userExist = await Promise.all([
-    User.findOne({ name, verify: true }).exec(),
-    User.findOne({ email, verify: true }).exec(),
+    User.findOne({ name }).exec(),
+    User.findOne({ email }).exec(),
   ]);
 
   const [userWithNameAlreadyExist, userWithEmailAlreadyExist] = userExist;
@@ -118,23 +118,19 @@ exports.signup = catchAsync(async (req, res, next) => {
 
   const user = await User.create({ name, email, password }); // Email send
 
-  const emailSendSuccessfully = await this.sendEmailFunc(
-    req,
-    user,
-    "signup-verification",
-    "/api/v1/auth/confirmSignup"
-  );
+  // const emailSendSuccessfully = await this.sendEmailFunc(
+  //   req,
+  //   user,
+  //   "signup-verification",
+  //   "/api/v1/auth/confirmSignup"
+  // );
 
-  if (!emailSendSuccessfully)
-    return next(
-      new AppError("email not send! Please try to signup again", 500)
-    );
+  // if (!emailSendSuccessfully)
+  //   return next(
+  //     new AppError("email not send! Please try to signup again", 500)
+  //   );
 
-  req.user = undefined;
-
-  console.log(req.user);
-
-  return send(res, 200, "confirm signup");
+  req.user = user;
 });
 
 // to verify user after email send during signup (change {verify:true})

@@ -16,7 +16,6 @@ const cartRouter = require("./routes/cartRouter");
 const GlobalErrorHandler = require("./controllers/globalErrorHandler");
 
 
-require('./cloudinary')
 
 // utils
 const send = require("./utils/sendJSON");

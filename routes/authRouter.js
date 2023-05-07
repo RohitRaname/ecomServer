@@ -16,8 +16,8 @@ const {
   confirmSignupUser,
 } = require("../controllers/authController");
 
-Router.post("/signup", signup);
-Router.get("/confirmSignup/:token", confirmSignupUser, sendTokens(false));
+Router.post("/signup", signup,sendTokens(false));
+// Router.get("/confirmSignup/:token", confirmSignupUser, sendTokens(false));
 
 Router.post("/login", login, sendTokens(false));
 
